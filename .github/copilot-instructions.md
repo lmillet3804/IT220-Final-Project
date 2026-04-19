@@ -1,0 +1,12 @@
+- [x] Verify that the copilot-instructions.md file in the .github directory is created.
+- [x] Clarify Project Requirements: Next.js full-stack multiplayer game, responsive on phone, supports up to 30 players.
+- [x] Scaffold the Project: Initialized Next.js-compatible TypeScript project structure in the current directory.
+- [x] Customize the Project: Implemented host/player flows, game phases, APIs, QR join, timers, and summary paths.
+- [x] Install Required Extensions: No extensions required by setup info.
+- [x] Compile the Project: Ran production build successfully with no blocking errors.
+- [x] Create and Run Task: Skipped (scripts in package.json are sufficient for this project).
+- [ ] Launch the Project: Not launched automatically; run npm run dev when ready.
+- [x] Ensure Documentation is Complete: Added README.md and cleaned this checklist file.
+- Work through each checklist item systematically.
+- Keep communication concise and focused.
+- Follow development best practices.
