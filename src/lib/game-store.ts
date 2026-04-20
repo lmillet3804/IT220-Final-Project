@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { createClient } from "redis";
 
 export type GamePhase = "lobby" | "write" | "guess" | "summary";
 
@@ -92,8 +92,28 @@ const DEFAULT_STORIES: Story[] = [
 // Local fallback for development
 let localGame: GameState | null = null;
 
-const KV_KEY = "game:state";
+const REDIS_KEY = "game:state";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+// Redis client setup
+const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+let redisClient: ReturnType<typeof createClient> | null = null;
+
+async function getRedisClient() {
+  if (!IS_PRODUCTION) {
+    return null;
+  }
+
+  if (!redisClient) {
+    redisClient = createClient({ url: redisUrl });
+    redisClient.on("error", (err) => console.error("Redis Client Error", err));
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+    }
+  }
+
+  return redisClient;
+}
 
 function randomId(prefix: string): string {
   const token = Math.random().toString(36).slice(2, 10);
@@ -149,12 +169,15 @@ async function getGame(): Promise<GameState> {
   }
 
   try {
-    const stored = await kv.get<GameState>(KV_KEY);
-    if (stored) {
-      return stored;
+    const client = await getRedisClient();
+    if (client) {
+      const stored = await client.get(REDIS_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
     }
   } catch (error) {
-    console.error("Failed to fetch game from KV:", error);
+    console.error("Failed to fetch game from Redis:", error);
   }
 
   return createFreshGame();
@@ -167,9 +190,12 @@ async function saveGame(game: GameState): Promise<void> {
   }
 
   try {
-    await kv.set(KV_KEY, game);
+    const client = await getRedisClient();
+    if (client) {
+      await client.set(REDIS_KEY, JSON.stringify(game));
+    }
   } catch (error) {
-    console.error("Failed to save game to KV:", error);
+    console.error("Failed to save game to Redis:", error);
   }
 }
 
