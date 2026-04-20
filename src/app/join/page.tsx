@@ -41,6 +41,40 @@ function JoinClient() {
   const [word3, setWord3] = useState("");
   const [guessStoryId, setGuessStoryId] = useState("");
 
+  const wordList = [
+    "Supernatural",
+    "Enchantment",
+    "Tranformation",
+    "Dangerous sea",
+    "Anthropomorphism",
+    "Impossible quest",
+    "Katabasis",
+    "Evil stepmother",
+    "Three sisters",
+    "Prophecy",
+    "Betrayal",
+    "Allegorical characters",
+    "Hero's Journey",
+    "Deceit",
+    "Misfortune",
+    "Tragedy",
+    "Aloofness",
+    "Affair",
+    "Self-preservation",
+    "Situational irony",
+    "Malmaritata",
+    "Monstrous birth",
+    "New world",
+    "Fertility",
+    "Marvel",
+    "Good fortune",
+    "Foil characters",
+    "Creation",
+    "Bildungsroman",
+    "Harmony",
+    "Revenge",
+  ];
+
   async function refreshState(targetPlayerId: string) {
     const query = new URLSearchParams();
     if (targetPlayerId) {
