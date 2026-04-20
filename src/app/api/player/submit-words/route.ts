@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
       playerId?: string;
       words?: string[];
     };
-    submitWords(body.playerId ?? "", body.words ?? []);
+    await submitWords(body.playerId ?? "", body.words ?? []);
     const response = NextResponse.json({ ok: true });
     response.headers.set(
       "Cache-Control",

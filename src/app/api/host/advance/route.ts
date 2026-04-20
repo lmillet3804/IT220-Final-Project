@@ -3,7 +3,7 @@ import { advancePhase } from "@/lib/game-store";
 
 export async function POST() {
   try {
-    advancePhase();
+    await advancePhase();
     const response = NextResponse.json({ ok: true });
     response.headers.set(
       "Cache-Control",

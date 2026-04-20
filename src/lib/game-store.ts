@@ -1,3 +1,5 @@
+import { kv } from "@vercel/kv";
+
 export type GamePhase = "lobby" | "write" | "guess" | "summary";
 
 export type Story = {
@@ -50,7 +52,7 @@ type StoryLine = {
   history: HistoryStep[];
 };
 
-type GameState = {
+export type GameState = {
   code: string;
   phase: GamePhase;
   round: number;
@@ -87,7 +89,11 @@ const DEFAULT_STORIES: Story[] = [
   },
 ];
 
-let game: GameState = createFreshGame();
+// Local fallback for development
+let localGame: GameState | null = null;
+
+const KV_KEY = "game:state";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 function randomId(prefix: string): string {
   const token = Math.random().toString(36).slice(2, 10);
@@ -134,27 +140,60 @@ function createFreshGame(): GameState {
   };
 }
 
-function findPlayer(playerId: string): Player | undefined {
+async function getGame(): Promise<GameState> {
+  if (!IS_PRODUCTION) {
+    if (!localGame) {
+      localGame = createFreshGame();
+    }
+    return localGame;
+  }
+
+  try {
+    const stored = await kv.get<GameState>(KV_KEY);
+    if (stored) {
+      return stored;
+    }
+  } catch (error) {
+    console.error("Failed to fetch game from KV:", error);
+  }
+
+  return createFreshGame();
+}
+
+async function saveGame(game: GameState): Promise<void> {
+  if (!IS_PRODUCTION) {
+    localGame = game;
+    return;
+  }
+
+  try {
+    await kv.set(KV_KEY, game);
+  } catch (error) {
+    console.error("Failed to save game to KV:", error);
+  }
+}
+
+function findPlayer(game: GameState, playerId: string): Player | undefined {
   return game.players.find((player) => player.id === playerId);
 }
 
-function allWriteSubmitted(): boolean {
+function allWriteSubmitted(game: GameState): boolean {
   const assignmentCount = Object.keys(game.writeAssignments).length;
   const submissionCount = Object.keys(game.writeSubmissions).length;
   return assignmentCount > 0 && assignmentCount === submissionCount;
 }
 
-function allGuessSubmitted(): boolean {
+function allGuessSubmitted(game: GameState): boolean {
   const assignmentCount = Object.keys(game.guessAssignments).length;
   const submissionCount = Object.keys(game.guessSubmissions).length;
   return assignmentCount > 0 && assignmentCount === submissionCount;
 }
 
-function getStoryById(storyId: string): Story | undefined {
+function getStoryById(game: GameState, storyId: string): Story | undefined {
   return game.stories.find((story) => story.id === storyId);
 }
 
-function assignWritePhase(): void {
+function assignWritePhase(game: GameState): void {
   const playerIds = shuffle(game.players.map((player) => player.id));
   const lineIds = shuffle(game.lines.map((line) => line.id));
 
@@ -181,10 +220,10 @@ function assignWritePhase(): void {
   game.phaseEndsAt = now() + game.roundSeconds * 1000;
 }
 
-function assignGuessPhase(): void {
+function assignGuessPhase(game: GameState): void {
   const submissions = Object.entries(game.writeSubmissions);
   if (submissions.length === 0) {
-    finalizeRound();
+    finalizeRound(game);
     return;
   }
 
@@ -230,7 +269,7 @@ function assignGuessPhase(): void {
   game.phaseEndsAt = now() + game.roundSeconds * 1000;
 }
 
-function finalizeRound(): void {
+function finalizeRound(game: GameState): void {
   for (const [lineId, writeSubmission] of Object.entries(
     game.writeSubmissions,
   )) {
@@ -262,13 +301,12 @@ function finalizeRound(): void {
 
     if (
       guessSubmission?.guessedStoryId &&
-      getStoryById(guessSubmission.guessedStoryId)
+      getStoryById(game, guessSubmission.guessedStoryId)
     ) {
       line.currentStoryId = guessSubmission.guessedStoryId;
     }
 
     if (!guessSubmission?.guessedStoryId && assignment) {
-      // If no guess was made, the line keeps moving with the prior story.
       line.currentStoryId = writeAssignment.storyId;
     }
   }
@@ -284,10 +322,10 @@ function finalizeRound(): void {
   }
 
   game.round += 1;
-  assignWritePhase();
+  assignWritePhase(game);
 }
 
-function tickTimeouts(): void {
+function tickTimeouts(game: GameState): void {
   if (!game.phaseEndsAt || game.phase === "lobby" || game.phase === "summary") {
     return;
   }
@@ -297,30 +335,35 @@ function tickTimeouts(): void {
   }
 
   if (game.phase === "write") {
-    assignGuessPhase();
+    assignGuessPhase(game);
     return;
   }
 
   if (game.phase === "guess") {
-    finalizeRound();
+    finalizeRound(game);
   }
 }
 
-function playerDisplay(playerId: string): { id: string; name: string } {
-  const player = findPlayer(playerId);
+function playerDisplay(
+  game: GameState,
+  playerId: string,
+): { id: string; name: string } {
+  const player = findPlayer(game, playerId);
   return {
     id: playerId,
     name: player?.name ?? "Unknown",
   };
 }
 
-export function resetGame(): GameState {
-  game = createFreshGame();
-  return game;
+export async function resetGame(): Promise<GameState> {
+  const newGame = createFreshGame();
+  await saveGame(newGame);
+  return newGame;
 }
 
-export function joinGame(code: string, name: string): Player {
-  tickTimeouts();
+export async function joinGame(code: string, name: string): Promise<Player> {
+  let game = await getGame();
+  tickTimeouts(game);
 
   if (game.code !== code) {
     throw new Error("Invalid game code.");
@@ -354,15 +397,17 @@ export function joinGame(code: string, name: string): Player {
   };
 
   game.players.push(player);
+  await saveGame(game);
   return player;
 }
 
-export function startGame(options: {
+export async function startGame(options: {
   stories: Story[];
   maxRounds: number;
   roundSeconds: number;
-}): void {
-  tickTimeouts();
+}): Promise<void> {
+  let game = await getGame();
+  tickTimeouts(game);
 
   if (game.players.length < 2) {
     throw new Error("At least 2 players are required.");
@@ -391,11 +436,16 @@ export function startGame(options: {
     };
   });
 
-  assignWritePhase();
+  assignWritePhase(game);
+  await saveGame(game);
 }
 
-export function submitWords(playerId: string, wordsInput: string[]): void {
-  tickTimeouts();
+export async function submitWords(
+  playerId: string,
+  wordsInput: string[],
+): Promise<void> {
+  let game = await getGame();
+  tickTimeouts(game);
 
   if (game.phase !== "write") {
     throw new Error("Not in writing phase.");
@@ -417,13 +467,19 @@ export function submitWords(playerId: string, wordsInput: string[]): void {
     submittedAt: now(),
   };
 
-  if (allWriteSubmitted()) {
-    assignGuessPhase();
+  if (allWriteSubmitted(game)) {
+    assignGuessPhase(game);
   }
+
+  await saveGame(game);
 }
 
-export function submitGuess(playerId: string, guessedStoryId: string): void {
-  tickTimeouts();
+export async function submitGuess(
+  playerId: string,
+  guessedStoryId: string,
+): Promise<void> {
+  let game = await getGame();
+  tickTimeouts(game);
 
   if (game.phase !== "guess") {
     throw new Error("Not in guessing phase.");
@@ -434,7 +490,7 @@ export function submitGuess(playerId: string, guessedStoryId: string): void {
     throw new Error("No guessing assignment found.");
   }
 
-  if (!getStoryById(guessedStoryId)) {
+  if (!getStoryById(game, guessedStoryId)) {
     throw new Error("Invalid story selection.");
   }
 
@@ -444,12 +500,14 @@ export function submitGuess(playerId: string, guessedStoryId: string): void {
     submittedAt: now(),
   };
 
-  if (allGuessSubmitted()) {
-    finalizeRound();
+  if (allGuessSubmitted(game)) {
+    finalizeRound(game);
   }
+
+  await saveGame(game);
 }
 
-export function getPublicState(playerId?: string): {
+export async function getPublicState(playerId?: string): Promise<{
   code: string;
   phase: GamePhase;
   round: number;
@@ -485,8 +543,10 @@ export function getPublicState(playerId?: string): {
       guessedStoryTitle?: string;
     }>;
   }>;
-} {
-  tickTimeouts();
+}> {
+  const game = await getGame();
+  tickTimeouts(game);
+  await saveGame(game);
 
   const writeAssignment = playerId
     ? game.writeAssignments[playerId]
@@ -512,8 +572,10 @@ export function getPublicState(playerId?: string): {
       ? {
           storyId: writeAssignment.storyId,
           storyTitle:
-            getStoryById(writeAssignment.storyId)?.title ?? "Unknown Story",
-          storySummary: getStoryById(writeAssignment.storyId)?.summary ?? "",
+            getStoryById(game, writeAssignment.storyId)?.title ??
+            "Unknown Story",
+          storySummary:
+            getStoryById(game, writeAssignment.storyId)?.summary ?? "",
           submitted: Boolean(game.writeSubmissions[writeAssignment.lineId]),
         }
       : null,
@@ -525,20 +587,23 @@ export function getPublicState(playerId?: string): {
       : null,
     summary: game.lines.map((line) => {
       const starter = line.id.replace("line_", "");
-      const finalStory = getStoryById(line.currentStoryId);
+      const finalStory = getStoryById(game, line.currentStoryId);
       return {
         lineId: line.id,
-        starterPlayer: playerDisplay(starter),
+        starterPlayer: playerDisplay(game, starter),
         finalStoryTitle: finalStory?.title ?? "Unknown Story",
         steps: line.history.map((step) => ({
           round: step.round,
           promptStoryTitle:
-            getStoryById(step.promptStoryId)?.title ?? "Unknown Story",
-          writer: playerDisplay(step.writerId),
+            getStoryById(game, step.promptStoryId)?.title ?? "Unknown Story",
+          writer: playerDisplay(game, step.writerId),
           words: step.words,
-          guesser: step.guesserId ? playerDisplay(step.guesserId) : undefined,
+          guesser: step.guesserId
+            ? playerDisplay(game, step.guesserId)
+            : undefined,
           guessedStoryTitle: step.guessedStoryId
-            ? (getStoryById(step.guessedStoryId)?.title ?? "Unknown Story")
+            ? (getStoryById(game, step.guessedStoryId)?.title ??
+              "Unknown Story")
             : undefined,
         })),
       };
@@ -546,35 +611,39 @@ export function getPublicState(playerId?: string): {
   };
 }
 
-export function getHostGameCode(): string {
-  tickTimeouts();
+export async function getHostGameCode(): Promise<string> {
+  const game = await getGame();
+  tickTimeouts(game);
+  await saveGame(game);
   return game.code;
 }
 
-export function pausePhase(): void {
-  // Pause by setting phaseEndsAt to null
+export async function pausePhase(): Promise<void> {
+  let game = await getGame();
   game.phaseEndsAt = null;
+  await saveGame(game);
 }
 
-export function resumePhase(): void {
-  // Resume by setting phaseEndsAt back to a future time
+export async function resumePhase(): Promise<void> {
+  let game = await getGame();
   if (game.phase !== "summary") {
     game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
   }
+  await saveGame(game);
 }
 
-export function advancePhase(): void {
-  // Force advance to next phase
-  tickTimeouts();
+export async function advancePhase(): Promise<void> {
+  let game = await getGame();
+  tickTimeouts(game);
   if (game.phase === "lobby") {
     game.phase = "write";
     game.round = 1;
     game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
-    assignWritePhase();
+    assignWritePhase(game);
   } else if (game.phase === "write") {
     game.phase = "guess";
     game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
-    assignGuessPhase();
+    assignGuessPhase(game);
   } else if (game.phase === "guess") {
     game.round += 1;
     if (game.round > game.maxRounds) {
@@ -583,7 +652,8 @@ export function advancePhase(): void {
     } else {
       game.phase = "write";
       game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
-      assignWritePhase();
+      assignWritePhase(game);
     }
   }
+  await saveGame(game);
 }

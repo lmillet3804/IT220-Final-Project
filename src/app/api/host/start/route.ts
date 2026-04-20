@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       roundSeconds?: number;
     };
 
-    startGame({
+    await startGame({
       stories: body.stories ?? [],
       maxRounds: body.maxRounds ?? 3,
       roundSeconds: body.roundSeconds ?? 60,

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { resetGame } from "@/lib/game-store";
 
 export async function POST() {
-  const state = resetGame();
+  const state = await resetGame();
   const response = NextResponse.json({ ok: true, code: state.code });
   response.headers.set(
     "Cache-Control",

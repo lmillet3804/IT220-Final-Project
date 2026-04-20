@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
       playerId?: string;
       guessedStoryId?: string;
     };
-    submitGuess(body.playerId ?? "", body.guessedStoryId ?? "");
+    await submitGuess(body.playerId ?? "", body.guessedStoryId ?? "");
     const response = NextResponse.json({ ok: true });
     response.headers.set(
       "Cache-Control",

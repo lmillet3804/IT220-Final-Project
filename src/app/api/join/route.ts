@@ -4,7 +4,7 @@ import { joinGame } from "@/lib/game-store";
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { code?: string; name?: string };
-    const player = joinGame(body.code ?? "", body.name ?? "");
+    const player = await joinGame(body.code ?? "", body.name ?? "");
     const response = NextResponse.json({ ok: true, player });
     response.headers.set(
       "Cache-Control",
