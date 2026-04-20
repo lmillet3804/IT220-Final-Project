@@ -550,3 +550,40 @@ export function getHostGameCode(): string {
   tickTimeouts();
   return game.code;
 }
+
+export function pausePhase(): void {
+  // Pause by setting phaseEndsAt to null
+  game.phaseEndsAt = null;
+}
+
+export function resumePhase(): void {
+  // Resume by setting phaseEndsAt back to a future time
+  if (game.phase !== "summary") {
+    game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
+  }
+}
+
+export function advancePhase(): void {
+  // Force advance to next phase
+  tickTimeouts();
+  if (game.phase === "lobby") {
+    game.phase = "write";
+    game.round = 1;
+    game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
+    assignWritePhase();
+  } else if (game.phase === "write") {
+    game.phase = "guess";
+    game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
+    assignGuessPhase();
+  } else if (game.phase === "guess") {
+    game.round += 1;
+    if (game.round > game.maxRounds) {
+      game.phase = "summary";
+      game.phaseEndsAt = null;
+    } else {
+      game.phase = "write";
+      game.phaseEndsAt = Date.now() + game.roundSeconds * 1000;
+      assignWritePhase();
+    }
+  }
+}

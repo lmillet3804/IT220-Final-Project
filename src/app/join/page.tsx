@@ -28,17 +28,11 @@ type StatePayload = {
   };
 };
 
-const PLAYER_STORAGE_KEY = "story-telephone-player-id";
-
 function JoinClient() {
   const searchParams = useSearchParams();
-  const initialPlayerId =
-    globalThis.window === undefined
-      ? ""
-      : (globalThis.window.localStorage.getItem(PLAYER_STORAGE_KEY) ?? "");
   const [code, setCode] = useState(searchParams.get("code") ?? "");
   const [name, setName] = useState("");
-  const [playerId, setPlayerId] = useState(initialPlayerId);
+  const [playerId, setPlayerId] = useState("");
   const [state, setState] = useState<StatePayload | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +64,7 @@ function JoinClient() {
     const timer = setInterval(() => {
       setNowMs(Date.now());
       void refreshState(playerId);
-    }, 1000);
+    }, 500);
     return () => {
       clearTimeout(initial);
       clearInterval(timer);
@@ -112,7 +106,6 @@ function JoinClient() {
     }
 
     setPlayerId(body.player.id);
-    globalThis.window.localStorage.setItem(PLAYER_STORAGE_KEY, body.player.id);
     await refreshState(body.player.id);
   }
 

@@ -8,10 +8,20 @@ export async function POST(request: NextRequest) {
       words?: string[];
     };
     submitWords(body.playerId ?? "", body.words ?? []);
-    return NextResponse.json({ ok: true });
+    const response = NextResponse.json({ ok: true });
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+    );
+    return response;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unable to submit words.";
-    return NextResponse.json({ ok: false, message }, { status: 400 });
+    const response = NextResponse.json({ ok: false, message }, { status: 400 });
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+    );
+    return response;
   }
 }

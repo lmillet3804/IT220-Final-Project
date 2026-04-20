@@ -1,13 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { submitGuess } from "@/lib/game-store";
+import { NextResponse } from "next/server";
+import { pausePhase } from "@/lib/game-store";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const body = (await request.json()) as {
-      playerId?: string;
-      guessedStoryId?: string;
-    };
-    submitGuess(body.playerId ?? "", body.guessedStoryId ?? "");
+    pausePhase();
     const response = NextResponse.json({ ok: true });
     response.headers.set(
       "Cache-Control",
@@ -16,7 +12,7 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unable to submit guess.";
+      error instanceof Error ? error.message : "Unable to pause phase.";
     const response = NextResponse.json({ ok: false, message }, { status: 400 });
     response.headers.set(
       "Cache-Control",

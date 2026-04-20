@@ -69,12 +69,13 @@ export default function HostPage() {
   const [roundSeconds, setRoundSeconds] = useState(60);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+  const [joinUrl, setJoinUrl] = useState("");
 
-  const joinUrl = useMemo(() => {
-    if (!state || globalThis.window === undefined) {
-      return "";
+  // Set joinUrl on client mount to prevent hydration mismatch
+  useEffect(() => {
+    if (state) {
+      setJoinUrl(`${window.location.origin}/join?code=${state.code}`);
     }
-    return `${globalThis.window.location.origin}/join?code=${state.code}`;
   }, [state]);
 
   const countdown = useMemo(() => {
@@ -98,7 +99,7 @@ export default function HostPage() {
     const timer = setInterval(() => {
       setNowMs(Date.now());
       void refreshState();
-    }, 1000);
+    }, 500);
     return () => {
       clearTimeout(initial);
       clearInterval(timer);
