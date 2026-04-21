@@ -5,15 +5,15 @@ export default function HomePage() {
     <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-6 py-12">
       <div className="w-full rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lift backdrop-blur">
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-coral">
-          Story Telephone
+          Fairytale Telephone
         </p>
         <h1 className="text-4xl font-black leading-tight text-ocean md:text-5xl">
-          Multiplayer Story Guessing Game
+          Multiplayer Fairytale Guessing Game
         </h1>
         <p className="mt-4 max-w-2xl text-slate-700">
           The host runs the game on a projector. Players join on their phones,
-          write three words for a story, and then another player guesses which
-          story it was.
+          write three words for a fairytale, and then another player guesses
+          which fairytale it was.
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">

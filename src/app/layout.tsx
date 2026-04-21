@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Story Telephone",
-  description: "Multiplayer storytelling and guessing game",
+  title: "Fairytale Telephone",
+  description: "Multiplayer fairytale storytelling and guessing game",
 };
 
 export default function RootLayout({

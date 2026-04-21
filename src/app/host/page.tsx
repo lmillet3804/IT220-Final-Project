@@ -49,24 +49,27 @@ const defaultStoryText = [
   "Landolfo | Landolfo turns to piracy, is captured, survives a shipwreck and is washed on an island where a woman who helps him return home rich.",
   "Lisabetta | Lisabetta's brothers discover her affair and kill her lover. Lisabetta finds his body in a dream, takes his head, and puts it in a pot of basil, where she cries over it every day.",
   "Calandrino | Calandrino is tricked by his friends into believing he his pregnant so they can extort money from him.",
+  "Federigo and the Falcon | Federigo, too poor for the woman he loves, went into the countryside with his beautiful falcon, whom the woman's son wanted to better his spirits. The woman tried to ask Federigo for it, but he killed it as a gift for her. Her son died, and she married Federigo",
+  "Gianni and Monna Tessa | A woman cheats on her husband while he is away known by the direction of a skull; when her husband comes home early, she sends off her lover by making her husband think it's a werewolf and performing an 'exorcism'",
+  "Griselda | A man puts his wife to the test by pretending he killed their children. When he pretends that he has married someone else, and she doesn't react, he presents to her the two children, now grown up.",
   "King Pig | A young man who is a pig marries two daughters who try to kill him. When he marries the third, he undresses his pig skin at night because she was kind to him.",
   "Crazy Pietro | A young man spares the life of a fish he caught, and the fish rewards him by saving Pietro and the princess after being cast off.",
   "Biancabella | A snake gives Biancabella magical properties and helps restore her to her former state after her stepmother, the queen, tries to have her killed.",
   "Adamantina | A magical doll excretes coins for two poor girls; after being stolen and thrown away, the doll bites the king's butt, and does not let go until it sees the girls.",
-  "Cinderella Cat | A girl ",
-  "Peruonto | ",
-  "Petrosinella | ",
-  "Sun, Moon, and Talia | ",
-  "The Goose | ",
-  "Nennillo and Nennello | ",
-  "The Three Citrons | ",
-  "The Flea | ",
-  "The Enchanted Doe | ",
-  "The Old Lady Who Was Skinned | ",
-  "Pinnochio | ",
-  "The Dragon with Seven Heads | ",
-  "The Love of the Three Pomegranates | ",
-  "Bella Venezia | ",
+  "Cinderella Cat | A girl kills her stepmother under the advice of her teacher, who becomes her new stepmother and forces her to work; some fairies help her to become beautiful for a ball, where she wins the prince's heart.",
+  "Peruonto | Peruonto shows compassion to three boys, who allow him everything he wishes; he wishes a woman to become pregnant, but he is the father and the king casts him into a barrel. Through the enchantment, Peruonto and the princess are able to escape",
+  "Petrosinella | A woman steals parsley from an ogress's garden, and promises her offspring as punishment. The ogress takes the offspring, locks her in a tower, but a prince comes to save her and together they flee from the ogress with the help of three acorns.",
+  "Sun, Moon, and Talia | Talia dies from a piece of flax, as a prophecy foretold, until a king passes by, impregnates her, and the kids suck the flax out. The king's jealous wife ask the cook to kill Talia's children, but the cook saves them and the wife dies instead",
+  "The Goose | Sisters buy goose that excretes coins but is taken by jealous neighbors and thrown away. The goose bites a prince's butt and only the sisters can get it to stop",
+  "Nennillo and Nennella | Two kids are cast into the forest by their stepmother and get lost; the boy is taken by a prince and the girl is taken by pirates, gets shipwrecked, and is swallowed by a fish. The girl recognizes the boy from inside the fish, and they reunite",
+  "The Three Citrons | A man travels far in search of a red and white wife. Three citrons give him a beautiful fairy, who is killed by a slave girl that replaces her for his wife. When the betrayal is discovered, the slave girl is killed and the fairy becomes queen",
+  "The Flea | A king raises an overgrown flea and says anyone who can identify the skin gets his daughter. An ogre identifies it and takes the girl, but after several challenges by seven brothers, they rescue the girl from the ogre",
+  "The Enchanted Doe | A queen eats a dragon heart to become pregnant, who, along with a virgin cook, give birth to brothers. The queen tries to kill the other brother, who flees until is captured by an ogre in disguise. The other brother knows he is in trouble and goes to free him.",
+  "The Old Lady Who Was Skinned | A king longs for two old women when he hears them sing, and after a trick, one gets him to sleep with her. When she is discovered, she is thrown out the window but fairies come and make her beautiful, so the king takes her back. The other sister is jealous and skins herself to become beautiful.",
+  "Pinnochio | A young boy has several adventures as he learns right from wrong with the help of a fairy in search of his father",
+  "The Dragon with Seven Heads | A fisherman captures a magic fish who makes his wife pregnant with triplets. The oldest leaves and finds a kingdom where he kills a dragon to rescue a princess but is frozen in a cave in the woods by a witch. His brothers come and save him; the youngest kills the witch, all are presented to the king, and enjoy many fortunes",
+  "The Love of the Three Pomegranates | A man in search of a red and white wife receives three pomegranates who grant him the wish. A slave girl turns the wife into a dove and replaces her, but the dove follows her. The slave girl notices the dove has it killed, which turns her into a pomegranate tree with healing powers. An old woman takes one and discovers a girl is cleaning her house while she is away. She takes her to Mass, where she is noticed by the king.",
+  "Bella Venezia | A mother, jealous by her daughter's beauty, has her killed. But the killer saves her, and the daughter finds herself with seven robbers, who unknowingly tell the mother her daughter is alive. The mother has a witch that successfully kills her daughter, but a king brings her back to life after taking out the pin that killed her.",
 ].join("\n");
 
 function parseStories(input: string): Story[] {
@@ -189,7 +192,7 @@ export default function HostPage() {
                 Host Dashboard
               </p>
               <h1 className="mt-1 text-3xl font-black text-ocean md:text-4xl">
-                Story Telephone
+                Fairytale Telephone
               </h1>
               <p className="mt-2 text-sm text-slate-600">
                 Code:{" "}
@@ -321,89 +324,46 @@ export default function HostPage() {
                 <div
                   className={"grid gap-4"}
                   style={{
-                    gridTemplateColumns: `repeat(${state.round * 3}, minmax(0,1fr))`,
+                    gridTemplateColumns: `repeat(${state.round * 3}, minmax(200px,1fr))`,
                   }}
                 >
-                  {state.summary.map(
-                    (line) =>
-                      line.steps.map((step) => (
-                        <>
-                          <div
-                            key={`${line.lineId}_${step.round}`}
-                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                          >
-                            <p>Prompt: {step.promptStoryTitle}</p>
-                          </div>
-                          <div
-                            key={`${line.lineId}_${step.round}_write`}
-                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                          >
-                            <p>
-                              {step.writer.name} selected:{" "}
-                              <span className="font-semibold">
-                                {step.words.join(", ")}
-                              </span>
-                            </p>
-                          </div>
-                          <div
-                            key={`${line.lineId}_${step.round}_guess`}
-                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                          >
-                            <p>
-                              {step.guesser ? (
-                                <>{step.guesser.name} guessed: </>
-                              ) : (
-                                <>No guesser (story ended here)</>
-                              )}
-                              <span className="font-semibold">
-                                {step.guessedStoryTitle ?? "(no guess)"}
-                              </span>
-                            </p>
-                          </div>
-                        </>
-                      )),
-                    // <article
-                    //   key={line.lineId}
-                    //   className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                    // >
-                    //   <p className="text-sm text-slate-700">
-                    //     Started by{" "}
-                    //     <span className="font-semibold text-slate-900">
-                    //       {line.starterPlayer.name}
-                    //     </span>
-                    //   </p>
-                    //   <p className="mt-1 text-sm text-slate-700">
-                    //     Final story guess:{" "}
-                    //     <span className="font-semibold text-slate-900">
-                    //       {line.finalStoryTitle}
-                    //     </span>
-                    //   </p>
-                    //   <div className="mt-3 space-y-2">
-                    //     {line.steps.map((step) => (
-                    //       <div
-                    //         key={`${line.lineId}_${step.round}`}
-                    //         className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                    //       >
-                    //         <p>
-                    //           <span className="font-semibold">
-                    //             Round {step.round}
-                    //           </span>
-                    //           : Prompt was {step.promptStoryTitle}
-                    //         </p>
-                    //         <p>
-                    //           Writer {step.writer.name} wrote:{" "}
-                    //           <span className="font-semibold">
-                    //             {step.words.join(", ")}
-                    //           </span>
-                    //         </p>
-                    //         <p>
-                    //           Guesser {step.guesser?.name ?? "(none)"} chose:{" "}
-                    //           {step.guessedStoryTitle ?? "(no guess)"}
-                    //         </p>
-                    //       </div>
-                    //     ))}
-                    //   </div>
-                    // </article>
+                  {state.summary.map((line) =>
+                    line.steps.map((step) => (
+                      <>
+                        <div
+                          key={`${line.lineId}_${step.round}`}
+                          className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                        >
+                          <p>Prompt: {step.promptStoryTitle}</p>
+                        </div>
+                        <div
+                          key={`${line.lineId}_${step.round}_write`}
+                          className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                        >
+                          <p>
+                            {step.writer.name} selected:{" "}
+                            <span className="font-semibold">
+                              {step.words.join(", ")}
+                            </span>
+                          </p>
+                        </div>
+                        <div
+                          key={`${line.lineId}_${step.round}_guess`}
+                          className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                        >
+                          <p>
+                            {step.guesser ? (
+                              <>{step.guesser.name} guessed: </>
+                            ) : (
+                              <>No guesser (story ended here)</>
+                            )}
+                            <span className="font-semibold">
+                              {step.guessedStoryTitle ?? "(no guess)"}
+                            </span>
+                          </p>
+                        </div>
+                      </>
+                    )),
                   )}
                 </div>
               </div>
