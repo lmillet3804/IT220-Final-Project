@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { wordList } from "@/lib/word-list";
 
 type Story = {
   id: string;
@@ -38,44 +39,6 @@ function JoinClient() {
   const [error, setError] = useState<string | null>(null);
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [guessStoryId, setGuessStoryId] = useState("");
-
-  const wordList = [
-    "Foil characters",
-    "Jealous sisters",
-    "Self-preservation",
-    "Revenge",
-    "Hero's Journey",
-    "Harmony",
-    "Child murder",
-    "Fertility",
-    "Creation",
-    "Impossible quest",
-    "Marvel",
-    "Tragedy",
-    "Monstrous birth",
-    "Situational irony",
-    "Affair",
-    "Aloofness",
-    "3 ____",
-    "Prophecy",
-    "Deceit",
-    "Malmaritata",
-    "New world",
-    "Dangerous sea",
-    "Katabasis",
-    "Enchantment",
-    "Anthropomorphism",
-    "Misfortune",
-    "Supernatural",
-    "Good fortune",
-    "Bed trick",
-    "Allegorical characters",
-    "Bildungsroman",
-    "Betrayal",
-    "Tranformation",
-    "Evil stepmother",
-    "Fairies",
-  ];
 
   async function refreshState(targetPlayerId: string) {
     const query = new URLSearchParams();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 
 type Story = {
@@ -33,6 +33,7 @@ type StatePayload = {
       words: [string, string, string];
       guesser?: { id: string; name: string };
       guessedStoryTitle?: string;
+      timeoutNote?: string;
     }>;
   }>;
 };
@@ -181,11 +182,11 @@ export default function HostPage() {
         className={
           "grid gap-6 " +
           (state?.phase === "summary"
-            ? " max-w-3xl mx-auto"
+            ? " max-w-7xl mx-auto"
             : "lg:grid-cols-[1.2fr_1fr]")
         }
       >
-        <section className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lift">
+        <section className="min-w-0 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lift">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-coral">
@@ -320,16 +321,16 @@ export default function HostPage() {
           {state?.phase === "summary" && (
             <div className="mt-6 space-y-4">
               <h2 className="text-xl font-black text-ocean">Story Paths</h2>
-              <div className="overflow-x-auto">
+              <div className="max-w-full overflow-x-auto">
                 <div
-                  className={"grid gap-4"}
+                  className={"grid w-max min-w-full gap-4"}
                   style={{
-                    gridTemplateColumns: `repeat(${state.round * 3}, minmax(200px,1fr))`,
+                    gridTemplateColumns: `repeat(${state.round * 3}, 150px)`,
                   }}
                 >
                   {state.summary.map((line) =>
                     line.steps.map((step) => (
-                      <>
+                      <Fragment key={`${line.lineId}_${step.round}_group`}>
                         <div
                           key={`${line.lineId}_${step.round}`}
                           className="rounded-xl bg-white p-3 text-sm text-slate-700"
@@ -361,8 +362,13 @@ export default function HostPage() {
                               {step.guessedStoryTitle ?? "(no guess)"}
                             </span>
                           </p>
+                          {step.timeoutNote && (
+                            <p className="mt-2 text-xs font-semibold text-amber-700">
+                              Note: {step.timeoutNote}
+                            </p>
+                          )}
                         </div>
-                      </>
+                      </Fragment>
                     )),
                   )}
                 </div>
