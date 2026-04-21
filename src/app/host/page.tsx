@@ -38,9 +38,35 @@ type StatePayload = {
 };
 
 const defaultStoryText = [
-  "A dragon opens a bakery | A retired dragon starts a small-town bakery and accidentally becomes famous.",
-  "The haunted vending machine | A school vending machine dispenses cryptic messages instead of snacks.",
-  "Lost on Mars with a ukulele | An astronaut stranded on Mars uses music to signal Earth.",
+  "Odysseus and Circe | Odysseus and his men encounter the enchantress Circe who turns his men into pigs, but he outsmarts her with the help of Hermes.",
+  "Odysseus and the Sirens | Odysseus and his men encounter the Sirens, but they escape by plugging their ears with wax.",
+  "Apollo and Daphne | Cupid tricks Apollo to fall in love with Daphne, who is repulsed and turns into a tree to escape him.",
+  "Narcissus and Echo | Narcissus rejects the personification of Echo, who prays that he fall in love and never obtain his desire.",
+  "Arachne and Minerva | Arachne defeats Minerva in a spinning competition, who turns her into a spider.",
+  "Orpheus and Eurydice | Orpheus travels to the underworld to retrieve Eurydice from Hades, but fails when he looks back at her, breaking the one rule Hermes gave.",
+  "Pygmalion | Pygmalion sculpts a statue of a perfect woman, and treats it like a woman until Zeus grants it become a real woman.",
+  "Cupid and Psyche | Cupid visits the banished Psyche at night as her husband until he is discovered. Psyche undertakes a series of challenges from Venus to win him back.",
+  "Landolfo | Landolfo turns to piracy, is captured, survives a shipwreck and is washed on an island where a woman who helps him return home rich.",
+  "Lisabetta | Lisabetta's brothers discover her affair and kill her lover. Lisabetta finds his body in a dream, takes his head, and puts it in a pot of basil, where she cries over it every day.",
+  "Calandrino | Calandrino is tricked by his friends into believing he his pregnant so they can extort money from him.",
+  "King Pig | A young man who is a pig marries two daughters who try to kill him. When he marries the third, he undresses his pig skin at night because she was kind to him.",
+  "Crazy Pietro | A young man spares the life of a fish he caught, and the fish rewards him by saving Pietro and the princess after being cast off.",
+  "Biancabella | A snake gives Biancabella magical properties and helps restore her to her former state after her stepmother, the queen, tries to have her killed.",
+  "Adamantina | A magical doll excretes coins for two poor girls; after being stolen and thrown away, the doll bites the king's butt, and does not let go until it sees the girls.",
+  "Cinderella Cat | A girl ",
+  "Peruonto | ",
+  "Petrosinella | ",
+  "Sun, Moon, and Talia | ",
+  "The Goose | ",
+  "Nennillo and Nennello | ",
+  "The Three Citrons | ",
+  "The Flea | ",
+  "The Enchanted Doe | ",
+  "The Old Lady Who Was Skinned | ",
+  "Pinnochio | ",
+  "The Dragon with Seven Heads | ",
+  "The Love of the Three Pomegranates | ",
+  "Bella Venezia | ",
 ].join("\n");
 
 function parseStories(input: string): Story[] {
@@ -148,7 +174,14 @@ export default function HostPage() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-6 md:px-8">
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+      <div
+        className={
+          "grid gap-6 " +
+          (state?.phase === "summary"
+            ? " max-w-3xl mx-auto"
+            : "lg:grid-cols-[1.2fr_1fr]")
+        }
+      >
         <section className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lift">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -284,50 +317,96 @@ export default function HostPage() {
           {state?.phase === "summary" && (
             <div className="mt-6 space-y-4">
               <h2 className="text-xl font-black text-ocean">Story Paths</h2>
-              {state.summary.map((line) => (
-                <article
-                  key={line.lineId}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+              <div className="overflow-x-auto">
+                <div
+                  className={"grid gap-4"}
+                  style={{
+                    gridTemplateColumns: `repeat(${state.round * 3}, minmax(0,1fr))`,
+                  }}
                 >
-                  <p className="text-sm text-slate-700">
-                    Started by{" "}
-                    <span className="font-semibold text-slate-900">
-                      {line.starterPlayer.name}
-                    </span>
-                  </p>
-                  <p className="mt-1 text-sm text-slate-700">
-                    Final story guess:{" "}
-                    <span className="font-semibold text-slate-900">
-                      {line.finalStoryTitle}
-                    </span>
-                  </p>
-                  <div className="mt-3 space-y-2">
-                    {line.steps.map((step) => (
-                      <div
-                        key={`${line.lineId}_${step.round}`}
-                        className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                      >
-                        <p>
-                          <span className="font-semibold">
-                            Round {step.round}
-                          </span>
-                          : Prompt was {step.promptStoryTitle}
-                        </p>
-                        <p>
-                          Writer {step.writer.name} wrote:{" "}
-                          <span className="font-semibold">
-                            {step.words.join(", ")}
-                          </span>
-                        </p>
-                        <p>
-                          Guesser {step.guesser?.name ?? "(none)"} chose:{" "}
-                          {step.guessedStoryTitle ?? "(no guess)"}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ))}
+                  {state.summary.map(
+                    (line) =>
+                      line.steps.map((step) => (
+                        <>
+                          <div
+                            key={`${line.lineId}_${step.round}`}
+                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                          >
+                            <p>Prompt: {step.promptStoryTitle}</p>
+                          </div>
+                          <div
+                            key={`${line.lineId}_${step.round}_write`}
+                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                          >
+                            <p>
+                              {step.writer.name} selected:{" "}
+                              <span className="font-semibold">
+                                {step.words.join(", ")}
+                              </span>
+                            </p>
+                          </div>
+                          <div
+                            key={`${line.lineId}_${step.round}_guess`}
+                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                          >
+                            <p>
+                              {step.guesser ? (
+                                <>{step.guesser.name} guessed: </>
+                              ) : (
+                                <>No guesser (story ended here)</>
+                              )}
+                              <span className="font-semibold">
+                                {step.guessedStoryTitle ?? "(no guess)"}
+                              </span>
+                            </p>
+                          </div>
+                        </>
+                      )),
+                    // <article
+                    //   key={line.lineId}
+                    //   className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                    // >
+                    //   <p className="text-sm text-slate-700">
+                    //     Started by{" "}
+                    //     <span className="font-semibold text-slate-900">
+                    //       {line.starterPlayer.name}
+                    //     </span>
+                    //   </p>
+                    //   <p className="mt-1 text-sm text-slate-700">
+                    //     Final story guess:{" "}
+                    //     <span className="font-semibold text-slate-900">
+                    //       {line.finalStoryTitle}
+                    //     </span>
+                    //   </p>
+                    //   <div className="mt-3 space-y-2">
+                    //     {line.steps.map((step) => (
+                    //       <div
+                    //         key={`${line.lineId}_${step.round}`}
+                    //         className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                    //       >
+                    //         <p>
+                    //           <span className="font-semibold">
+                    //             Round {step.round}
+                    //           </span>
+                    //           : Prompt was {step.promptStoryTitle}
+                    //         </p>
+                    //         <p>
+                    //           Writer {step.writer.name} wrote:{" "}
+                    //           <span className="font-semibold">
+                    //             {step.words.join(", ")}
+                    //           </span>
+                    //         </p>
+                    //         <p>
+                    //           Guesser {step.guesser?.name ?? "(none)"} chose:{" "}
+                    //           {step.guessedStoryTitle ?? "(no guess)"}
+                    //         </p>
+                    //       </div>
+                    //     ))}
+                    //   </div>
+                    // </article>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -336,27 +415,31 @@ export default function HostPage() {
           )}
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lift">
-          <h2 className="text-lg font-black text-ocean">
-            Players ({state?.players.length ?? 0}/30)
-          </h2>
-          <ul className="mt-4 space-y-2">
-            {state?.players.map((player, index) => (
-              <li
-                key={player.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
-              >
-                <span className="font-semibold text-slate-800">
-                  {player.name}
-                </span>
-                <span className="text-xs text-slate-500">#{index + 1}</span>
-              </li>
-            ))}
-            {state?.players.length === 0 && (
-              <li className="text-sm text-slate-500">No players joined yet.</li>
-            )}
-          </ul>
-        </section>
+        {state?.phase !== "summary" && (
+          <section className="rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-lift">
+            <h2 className="text-lg font-black text-ocean">
+              Players ({state?.players.length ?? 0}/30)
+            </h2>
+            <ul className="mt-4 space-y-2">
+              {state?.players.map((player, index) => (
+                <li
+                  key={player.id}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+                >
+                  <span className="font-semibold text-slate-800">
+                    {player.name}
+                  </span>
+                  <span className="text-xs text-slate-500">#{index + 1}</span>
+                </li>
+              ))}
+              {state?.players.length === 0 && (
+                <li className="text-sm text-slate-500">
+                  No players joined yet.
+                </li>
+              )}
+            </ul>
+          </section>
+        )}
       </div>
     </main>
   );

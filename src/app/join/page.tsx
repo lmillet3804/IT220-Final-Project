@@ -36,9 +36,7 @@ function JoinClient() {
   const [state, setState] = useState<StatePayload | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [error, setError] = useState<string | null>(null);
-  const [word1, setWord1] = useState("");
-  const [word2, setWord2] = useState("");
-  const [word3, setWord3] = useState("");
+  const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [guessStoryId, setGuessStoryId] = useState("");
 
   const wordList = [
@@ -148,7 +146,7 @@ function JoinClient() {
     const response = await fetch("/api/player/submit-words", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerId, words: [word1, word2, word3] }),
+      body: JSON.stringify({ playerId, words: selectedWords }),
     });
 
     const body = (await response.json()) as { ok: boolean; message?: string };
@@ -157,10 +155,16 @@ function JoinClient() {
       return;
     }
 
-    setWord1("");
-    setWord2("");
-    setWord3("");
+    setSelectedWords([]);
     await refreshState(playerId);
+  }
+
+  function handleWordSelect(word: string) {
+    if (selectedWords.includes(word)) {
+      setSelectedWords(selectedWords.filter((w) => w !== word));
+    } else if (selectedWords.length < 3) {
+      setSelectedWords([...selectedWords, word]);
+    }
   }
 
   async function handleSubmitGuess() {
@@ -277,24 +281,25 @@ function JoinClient() {
               </p>
             ) : (
               <>
-                <input
-                  value={word1}
-                  onChange={(event) => setWord1(event.target.value)}
-                  placeholder="Word 1"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none ring-coral/30 focus:ring"
-                />
-                <input
-                  value={word2}
-                  onChange={(event) => setWord2(event.target.value)}
-                  placeholder="Word 2"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none ring-coral/30 focus:ring"
-                />
-                <input
-                  value={word3}
-                  onChange={(event) => setWord3(event.target.value)}
-                  placeholder="Word 3"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none ring-coral/30 focus:ring"
-                />
+                {wordList.map((word) =>
+                  selectedWords.includes(word) ? (
+                    <button
+                      key={word}
+                      onClick={() => handleWordSelect(word)}
+                      className="rounded-xl border-2 border-ocean bg-ocean/10 px-3 py-2 text-slate-900 outline-none ring-coral/30 focus:ring"
+                    >
+                      {word}
+                    </button>
+                  ) : (
+                    <button
+                      key={word}
+                      onClick={() => handleWordSelect(word)}
+                      className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none ring-coral/30 focus:ring"
+                    >
+                      {word}
+                    </button>
+                  ),
+                )}
                 <button
                   onClick={handleSubmitWords}
                   className="w-full rounded-xl bg-ocean px-4 py-3 text-base font-bold text-white transition hover:bg-slate-900"
