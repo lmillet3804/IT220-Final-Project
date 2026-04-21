@@ -325,18 +325,18 @@ export default function HostPage() {
                 <div
                   className={"grid w-max min-w-full gap-4"}
                   style={{
-                    gridTemplateColumns: `repeat(${state.round * 3}, 150px)`,
+                    gridTemplateColumns: `repeat(${state.round * 2 + 1}, 150px)`,
                   }}
                 >
+                  <div className="rounded-xl bg-white p-3 text-sm text-slate-700">
+                    <p>
+                      Starter Prompt:{" "}
+                      {state.summary[0].steps[0].promptStoryTitle}
+                    </p>
+                  </div>
                   {state.summary.map((line) =>
                     line.steps.map((step) => (
                       <Fragment key={`${line.lineId}_${step.round}_group`}>
-                        <div
-                          key={`${line.lineId}_${step.round}`}
-                          className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                        >
-                          <p>Prompt: {step.promptStoryTitle}</p>
-                        </div>
                         <div
                           key={`${line.lineId}_${step.round}_write`}
                           className="rounded-xl bg-white p-3 text-sm text-slate-700"
