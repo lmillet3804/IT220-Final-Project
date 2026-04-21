@@ -176,6 +176,22 @@ export default function HostPage() {
     setStarting(false);
   }
 
+  function exportToJSON() {
+    if (!state) return;
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(state, null, 2));
+    const downloadAnchorNode = document.createElement("a");
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute(
+      "download",
+      `fairytale-telephone-summary-${state.code}.json`,
+    );
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-6 md:px-8">
       <div
@@ -320,7 +336,18 @@ export default function HostPage() {
 
           {state?.phase === "summary" && (
             <div className="mt-6 space-y-4">
-              <h2 className="text-xl font-black text-ocean">Story Paths</h2>
+              <div className="flex flex-row">
+                <h2 className="text-xl font-black text-ocean flex-1">
+                  Story Paths
+                </h2>
+                <button
+                  onClick={exportToJSON}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-900"
+                >
+                  Export to JSON
+                </button>
+              </div>
+
               <div className="max-w-full overflow-x-auto">
                 <div
                   className={"grid w-max min-w-full gap-4"}
@@ -328,49 +355,51 @@ export default function HostPage() {
                     gridTemplateColumns: `repeat(${state.round * 2 + 1}, 150px)`,
                   }}
                 >
-                  <div className="rounded-xl bg-white p-3 text-sm text-slate-700">
-                    <p>
-                      Starter Prompt:{" "}
-                      {state.summary[0].steps[0].promptStoryTitle}
-                    </p>
-                  </div>
-                  {state.summary.map((line) =>
-                    line.steps.map((step) => (
-                      <Fragment key={`${line.lineId}_${step.round}_group`}>
-                        <div
-                          key={`${line.lineId}_${step.round}_write`}
-                          className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                        >
-                          <p>
-                            {step.writer.name} selected:{" "}
-                            <span className="font-semibold">
-                              {step.words.join(", ")}
-                            </span>
-                          </p>
-                        </div>
-                        <div
-                          key={`${line.lineId}_${step.round}_guess`}
-                          className="rounded-xl bg-white p-3 text-sm text-slate-700"
-                        >
-                          <p>
-                            {step.guesser ? (
-                              <>{step.guesser.name} guessed: </>
-                            ) : (
-                              <>No guesser (story ended here)</>
-                            )}
-                            <span className="font-semibold">
-                              {step.guessedStoryTitle ?? "(no guess)"}
-                            </span>
-                          </p>
-                          {step.timeoutNote && (
-                            <p className="mt-2 text-xs font-semibold text-amber-700">
-                              Note: {step.timeoutNote}
+                  {state.summary.map((line) => (
+                    <Fragment key={line.lineId}>
+                      <div className="rounded-xl bg-white p-3 text-sm text-slate-700">
+                        <p>
+                          Starter Prompt:{" "}
+                          {state.summary[0].steps[0].promptStoryTitle}
+                        </p>
+                      </div>
+                      {line.steps.map((step) => (
+                        <Fragment key={`${line.lineId}_${step.round}_group`}>
+                          <div
+                            key={`${line.lineId}_${step.round}_write`}
+                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                          >
+                            <p>
+                              {step.writer.name} selected:{" "}
+                              <span className="font-semibold">
+                                {step.words.join(", ")}
+                              </span>
                             </p>
-                          )}
-                        </div>
-                      </Fragment>
-                    )),
-                  )}
+                          </div>
+                          <div
+                            key={`${line.lineId}_${step.round}_guess`}
+                            className="rounded-xl bg-white p-3 text-sm text-slate-700"
+                          >
+                            <p>
+                              {step.guesser ? (
+                                <>{step.guesser.name} guessed: </>
+                              ) : (
+                                <>No guesser (story ended here)</>
+                              )}
+                              <span className="font-semibold">
+                                {step.guessedStoryTitle ?? "(no guess)"}
+                              </span>
+                            </p>
+                            {step.timeoutNote && (
+                              <p className="mt-2 text-xs font-semibold text-amber-700">
+                                Note: {step.timeoutNote}
+                              </p>
+                            )}
+                          </div>
+                        </Fragment>
+                      ))}
+                    </Fragment>
+                  ))}
                 </div>
               </div>
             </div>
